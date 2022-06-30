@@ -1,13 +1,19 @@
 const loginForm = (req, res) => {
     res.render('auth/login', {
-        auth: false,
+        page: 'Sign In',
     });
 };
 
 const registerForm = (req, res) => {
     res.render('auth/register', {
-        auth: false,
+        page: 'Sign Up',
     });
 };
 
-export { loginForm, registerForm };
+const forgotPasswordForm = (req, res) => {
+    res.render('auth/forgot-password', {
+        page: 'Forgot Password ?',
+    });
+};
+
+export { loginForm, registerForm, forgotPasswordForm };

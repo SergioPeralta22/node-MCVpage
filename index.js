@@ -10,12 +10,11 @@ const app = express();
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-//routing
-// app.get('/', userRoutes);
-// app.get('/users', userRoutes);
-//.use trae todas las rutas que coincidan. en este caso traera todos las que empiecen con /
+//* carpeta publica
+app.use(express.static('public'));
 
-app.use('/auth', userRoutes);
+//*routing
+app.use('/', userRoutes);
 
 //*define port and run
 

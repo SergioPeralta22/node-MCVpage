@@ -1,10 +1,21 @@
-div
-    h2.text-center Login
-    h2=auth
-    h3 inicia sesion
+extends ../layout/index
 
-    if auth
-        p usuario autenticado
-    else
-        p usuario no autenticado
-    end
+block contenido
+    div(class="py-5")
+        h1(class="text-4xl font-extrabold text-center my-10") Real
+            span(class="font-normal text-indigo-600") State
+        h2.text-center.text-2xl.font-extrabold=page
+        div(class="mt-8 mx-auto max-w-md")
+            div(class="bg-white py-8 px-4 shadow rounded-lg")
+                form(action="")
+                    div
+                        label(for="email", class="block uppercase text-sm text-gray-500 my-2 font-bold") Email:
+                        input(type="email", name="email", id="email", class="border border-gray-300 rounded-md p-2 w-full placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:placeholder-gray-300", placeholder="Enter your email")
+                    div
+                        label(for="password", class="block uppercase text-sm text-gray-500 my-2 font-bold") Password:
+                        input(type="password", name="password", id="password", class="border border-gray-300 rounded-md p-2 w-full placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 focus:placeholder-gray-300", placeholder="Enter your password")
+                    div
+                        a( href="/forgot-password", class="text-blue-400 hover:text-blue-700  mt-2 mr-0 font-bold rounded-md block cursor-pointer text-end") Forgot your password?
+                        a( href="/register", class="text-blue-400 hover:text-blue-700 mr-0 font-bold py-2 rounded-md block cursor-pointer text-end") Don't have an account?
+                    input(type="submit", value="Login", class="bg-blue-500 hover:bg-blue-700 text-white mt-8 mx-auto font-bold py-2 px-6 rounded-md block cursor-pointer")
+                
