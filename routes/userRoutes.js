@@ -3,6 +3,7 @@ import {
     loginForm,
     registerForm,
     forgotPasswordForm,
+    toRegist,
 } from '../controllers/userController.js';
 
 const router = express.Router();
@@ -14,7 +15,10 @@ const router = express.Router();
 // });
 
 router.get('/login', loginForm);
+
 router.get('/register', registerForm);
+router.post('/register', toRegist);
+
 router.get('/forgot-password', forgotPasswordForm);
 
 export default router;
