@@ -1,0 +1,21 @@
+extends ../layout/index
+
+block contenido
+    div(class="py-5")
+        h1(class="text-4xl font-extrabold text-center my-10") Real
+            span(class="font-normal text-indigo-600") State
+        h2.text-center.text-2xl.font-extrabold=page 
+        if (error)
+            h3( class="text-xl font-bold text-center my-10 text-red-500")
+                span Error: #{message}.
+
+            a(href="/register")
+                button(class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded block mx-auto")
+                    | Try again, please.
+        else
+            h3( class="text-xl font-bold text-center my-10 text-green-600")
+                span Success: #{message}
+            a(href="/login")
+                button(class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded block mx-auto")
+                    | Login.
+        

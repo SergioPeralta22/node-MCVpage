@@ -1,5 +1,6 @@
 import { body, check, validationResult } from 'express-validator';
 import { generateId } from '../helpers/tokens.js';
+import { emailRegistry } from '../helpers/emails.js';
 
 import User from '../models/User.js';
 
@@ -15,7 +16,7 @@ const registerForm = (req, res) => {
     });
 };
 
-//*crear un usuario
+//! crear un usuario
 
 const toRegist = async (req, res) => {
     //*validacion
@@ -82,10 +83,35 @@ const toRegist = async (req, res) => {
     });
 
     //*enviar email con el link de confirmacion
+    emailRegistry({
+        name: user.name,
+        email: user.email,
+        token: user.token,
+    });
 
     res.render('templates/message', {
         page: 'Account Created Successfully',
         message: 'Please check your email to confirm your account',
+    });
+};
+
+//! confirmar usuario
+const confirmUser = async (req, res) => {
+    const { token } = req.params;
+    const user = await User.findOne({ where: { token } });
+    if (!user) {
+        return res.render('auth/confirm', {
+            page: 'There was an error confirming your account.',
+            message: 'Invalid Token',
+            error: true,
+        });
+    }
+    user.confirm = true;
+    user.token = null;
+    await user.save();
+    res.render('auth/confirm', {
+        page: 'Account Confirmation.',
+        message: 'Your account has been confirmed.',
     });
 };
 
@@ -95,4 +121,4 @@ const forgotPasswordForm = (req, res) => {
     });
 };
 
-export { loginForm, registerForm, toRegist, forgotPasswordForm };
+export { loginForm, registerForm, toRegist, forgotPasswordForm, confirmUser };

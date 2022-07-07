@@ -4,6 +4,7 @@ import {
     registerForm,
     forgotPasswordForm,
     toRegist,
+    confirmUser,
 } from '../controllers/userController.js';
 
 const router = express.Router();
@@ -18,6 +19,8 @@ router.get('/login', loginForm);
 
 router.get('/register', registerForm);
 router.post('/register', toRegist);
+
+router.get('/confirm/:token', confirmUser);
 
 router.get('/forgot-password', forgotPasswordForm);
 
