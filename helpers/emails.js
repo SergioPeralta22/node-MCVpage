@@ -34,4 +34,36 @@ const emailRegistry = async (data) => {
     console.log('Email sent');
 };
 
-export { emailRegistry };
+const emailForgotPassword = async (data) => {
+    const transport = nodemailer.createTransport({
+        host: process.env.MAIL_HOST,
+        port: process.env.MAIL_PORT,
+        auth: {
+            user: process.env.MAIL_USER,
+            pass: process.env.MAIL_PASS,
+        },
+    });
+
+    const { name, email, token } = data;
+
+    //*enviar email con el link de confirmacion
+
+    await transport.sendMail({
+        from: 'RealState',
+        to: email,
+        subject: 'Reset your password in RealState.com',
+        html: `
+        <h1>Hello ${name}</h1>
+        <p>Please click on the link to reset your password</p>
+        <a href="${process.env.CLIENT_URL}:${
+            process.env.PORT ?? 3000
+        }/forgot-password/${token}">Reset Password</a>
+
+        <p>If you did not request this, please ignore this email</p>
+        `,
+    });
+
+    console.log('Email(recover) sent');
+};
+
+export { emailRegistry, emailForgotPassword };

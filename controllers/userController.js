@@ -1,6 +1,6 @@
 import { body, check, validationResult } from 'express-validator';
 import { generateId } from '../helpers/tokens.js';
-import { emailRegistry } from '../helpers/emails.js';
+import { emailForgotPassword, emailRegistry } from '../helpers/emails.js';
 
 import User from '../models/User.js';
 
@@ -13,6 +13,7 @@ const loginForm = (req, res) => {
 const registerForm = (req, res) => {
     res.render('auth/register', {
         page: 'Sign Up',
+        csrfToken: req.csrfToken(),
     });
 };
 
@@ -47,6 +48,7 @@ const toRegist = async (req, res) => {
     if (!resultado.isEmpty()) {
         return res.render('auth/register', {
             page: 'Sign Up',
+            csrfToken: req.csrfToken(),
             errors: resultado.array(),
             user: {
                 name: req.body.name,
@@ -61,6 +63,7 @@ const toRegist = async (req, res) => {
     if (userExist) {
         return res.render('auth/register', {
             page: 'Sign Up',
+            csrfToken: req.csrfToken(),
             errors: [
                 {
                     msg: 'User already exists',
@@ -118,7 +121,81 @@ const confirmUser = async (req, res) => {
 const forgotPasswordForm = (req, res) => {
     res.render('auth/forgot-password', {
         page: 'Forgot Password ?',
+        csrfToken: req.csrfToken(),
     });
 };
 
-export { loginForm, registerForm, toRegist, forgotPasswordForm, confirmUser };
+const resetPassword = async (req, res) => {
+    await check('email')
+        .isEmail()
+        .withMessage('Email must be a valid email')
+        .run(req);
+
+    let resultado = validationResult(req);
+
+    if (!resultado.isEmpty()) {
+        return res.render('auth/forgot-password', {
+            page: 'Forgot Password ?',
+            csrfToken: req.csrfToken(),
+            errors: resultado.array(),
+        });
+    }
+
+    //* search for user
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+        return res.render('auth/forgot-password', {
+            page: 'Forgot Password ?',
+            csrfToken: req.csrfToken(),
+            errors: [
+                {
+                    msg: 'The email entered does not belong to any user',
+                },
+            ],
+        });
+    }
+
+    //* generate token
+    user.token = generateId();
+    await user.save();
+
+    //* send email with token
+    emailForgotPassword({
+        name: user.name,
+        email: user.email,
+        token: user.token,
+    });
+
+    res.render('templates/message', {
+        page: 'Reset your password',
+        message: 'Please check your email to reset your password',
+    });
+};
+
+const checkToken = async (req, res) => {
+    const { token } = req.params;
+    const user = await User.findOne({ where: { token } });
+    if (!user) {
+        return res.render('auth/confirm', {
+            page: 'Reset your password',
+            message: 'Invalid Token',
+            error: true,
+        });
+    }
+
+    //* render form
+};
+
+const newPassword = async (req, res) => {};
+
+export {
+    loginForm,
+    registerForm,
+    toRegist,
+    forgotPasswordForm,
+    confirmUser,
+    resetPassword,
+    checkToken,
+    newPassword,
+};
