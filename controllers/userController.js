@@ -185,6 +185,10 @@ const checkToken = async (req, res) => {
     }
 
     //* render form
+
+    res.render('auth/reset-password', {
+        page: 'Reset your password',
+    });
 };
 
 const newPassword = async (req, res) => {};
