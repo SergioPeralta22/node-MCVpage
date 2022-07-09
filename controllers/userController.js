@@ -1,4 +1,5 @@
-import { body, check, validationResult } from 'express-validator';
+import { check, validationResult } from 'express-validator';
+import bcrypt from 'bcrypt';
 import { generateId } from '../helpers/tokens.js';
 import { emailForgotPassword, emailRegistry } from '../helpers/emails.js';
 
@@ -7,7 +8,63 @@ import User from '../models/User.js';
 const loginForm = (req, res) => {
     res.render('auth/login', {
         page: 'Sign In',
+        csrfToken: req.csrfToken(),
     });
+};
+
+const authenticate = async (req, res) => {
+    //*validation
+
+    await check('email')
+        .isEmail()
+        .withMessage('Email must be a valid email')
+        .run(req);
+    await check('password')
+        .notEmpty()
+        .withMessage('Password is required')
+        .run(req);
+
+    let resultado = validationResult(req);
+
+    //*verificar que el resultado no este vacio
+    if (!resultado.isEmpty()) {
+        return res.render('auth/login', {
+            page: 'Sign In',
+            errors: resultado.array(),
+            csrfToken: req.csrfToken(),
+        });
+    }
+
+    const { email, password } = req.body;
+
+    //*check if user exists
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+        return res.render('auth/login', {
+            page: 'Sign In',
+            errors: [{ msg: 'User does not exist' }],
+            csrfToken: req.csrfToken(),
+        });
+    }
+
+    //*check if user is confirmed
+    if (!user.confirm) {
+        return res.render('auth/login', {
+            page: 'Sign In',
+            errors: [{ msg: 'Your account has not been confirmed' }],
+            csrfToken: req.csrfToken(),
+        });
+    }
+
+    //*check if password is correct
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        return res.render('auth/login', {
+            page: 'Sign In',
+            errors: [{ msg: 'Password is incorrect' }],
+            csrfToken: req.csrfToken(),
+        });
+    }
 };
 
 const registerForm = (req, res) => {
@@ -188,13 +245,50 @@ const checkToken = async (req, res) => {
 
     res.render('auth/reset-password', {
         page: 'Reset your password',
+        csrfToken: req.csrfToken(),
     });
 };
 
-const newPassword = async (req, res) => {};
+const newPassword = async (req, res) => {
+    await check('password')
+        .isLength({ min: 6 })
+        .withMessage('new password must be at least 6 characters long')
+        .run(req);
+
+    let resultado = validationResult(req);
+
+    if (!resultado.isEmpty()) {
+        return res.render('auth/reset-password', {
+            page: 'Reset your password',
+            csrfToken: req.csrfToken(),
+            errors: resultado.array(),
+        });
+    }
+
+    const { token } = req.params;
+    const { password } = req.body;
+
+    //* identify user who requested the password reset
+    const user = await User.findOne({ where: { token } });
+
+    //* hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    user.token = null;
+
+    //* save new password
+    await user.save();
+
+    //* render message
+    res.render('auth/confirm', {
+        page: 'Your password has been changed',
+        message: 'Your password was saved successfully',
+    });
+};
 
 export {
     loginForm,
+    authenticate,
     registerForm,
     toRegist,
     forgotPasswordForm,
