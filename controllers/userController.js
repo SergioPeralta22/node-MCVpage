@@ -1,6 +1,6 @@
 import { check, validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
-import { generateId } from '../helpers/tokens.js';
+import { generateId, generateJWT } from '../helpers/tokens.js';
 import { emailForgotPassword, emailRegistry } from '../helpers/emails.js';
 
 import User from '../models/User.js';
@@ -65,6 +65,20 @@ const authenticate = async (req, res) => {
             csrfToken: req.csrfToken(),
         });
     }
+
+    //*user authentication
+
+    const token = generateJWT(user.id); //*generar token
+
+    //*almacenar token en la cookie
+    return res
+        .cookie('_token', token, {
+            httpOnly: true,
+            maxAge: 1000 * 60 * 60 * 24 * 365,
+            // sameSite: true,
+            // secure: process.env.NODE_ENV === 'production',
+        })
+        .redirect('/my-properties');
 };
 
 const registerForm = (req, res) => {
