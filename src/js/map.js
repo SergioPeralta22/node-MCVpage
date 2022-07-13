@@ -35,7 +35,17 @@
                     console.log(error);
                 } else {
                     marker.bindPopup(result.address.Match_addr).openPopup();
+                    document.querySelector('.street').textContent =
+                        result?.address?.Address ?? '';
+                    document.querySelector('#street').value =
+                        result?.address?.Address ?? '';
+                    document.querySelector('#lat').value =
+                        result?.latlng?.lat ?? '';
+                    document.querySelector('#lng').value =
+                        result?.latlng?.lng ?? '';
                 }
             });
+
+        //* fill the campus form
     });
 })();
